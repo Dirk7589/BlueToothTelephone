@@ -1,6 +1,15 @@
+/**
+*@file usart.h
+*@brief The usart header file 
+*@author Dirk Dubois
+*@version 4.0
+*@date November 22, 2011
+*/
+
 #ifndef _SERIAL_H_
 #define _SERIAL_H_
 
+/*Defines*/
 #define BAUD 300    
 #define FOSC 4000000L
 #define NINE 0     /* Use 9bit communication? FALSE=8bit */
@@ -35,6 +44,7 @@
 	SPBRG = DIVIDER;     	\
 	RCSTA = (NINE_BITS|0x90);	\
 	TXSTA = (SPEED|NINE_BITS|0x20)
+
 
 void putch(unsigned char);
 unsigned char getch(void);
