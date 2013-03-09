@@ -1,16 +1,19 @@
-/*Blue Tooth Telephone Code
-*Author: Dirk Dubois
-*Rev: 4.0
-*Date: November 22, 2011
-*
-*
+/**
+*@file main.c
+*@brief Blue Tooth Telephone 
+*@author Dirk Dubois
+*@version 4.0
+*@date November 22, 2011
 */
 
+/*Includes*/
 #include <htc.h>
 #include <stdlib.h>
 #include <string.h>
 #include "usart.h"
 #include "delay.h"
+
+/*Defines*/
 
 //Defines clock frequency for outside functions
 #define XTAL_FREQ 4MHZ
@@ -34,17 +37,18 @@
 
 //String Constants
 #define MAX_MESSAGE_SIZE 50
-unsigned char message[MAX_MESSAGE_SIZE]; //message buffer in ISR
-//unsigned char finalMessage[MAX_MESSAGE_SIZE]; //final message buffer
-unsigned char messageIndex = 0; //message index
-unsigned char messageComplete = 0; //Flag for message buffer
+unsigned char message[MAX_MESSAGE_SIZE]; /**<message buffer in ISR*/
+unsigned char messageIndex = 0; /**<message index*/
+unsigned char messageComplete = 0; /**<Flag for message buffer*/
 
 //Global Variables
-unsigned char connected = 0; //Flag to determine if connected
-unsigned char i = 0 ; //coutner variable
-/*An isr function the process a recieved message over the UART module
-Input: void
-Output: void */
+unsigned char connected = 0; /**<Flag to determine if connected*/
+unsigned char i = 0 ; /**<coutner variable*/
+
+/**
+*@brief An isr function the process a recieved message over the UART module
+*@retval None
+*/
 void interrupt isr(void)
 {
 	unsigned char c = getch();
@@ -67,10 +71,12 @@ void interrupt isr(void)
 	
 }
 
-/* A Ring Function that generates 20Hz signal 180* out of phase
-Note, the duty cycle on/off should be 2/4 for a regular ring tone
-Input: char, ring time
-Output: void */
+/**
+*@brief A Ring Function that generates 20Hz signal 180* out of phase
+*@param[in] j A char that indicates the number of rings
+*@retval None
+*@note the duty cycle on/off should be 2/4 for a regular ring tone
+*/
 void ring(char j)
 {
 	char i;
@@ -102,6 +108,11 @@ void ring(char j)
 	RINGER_HARDWARE = 0; //turn off ringer
 
 }
+
+/**
+*@brief A function that decodes a ten digit number dialed into the telephone and returns its ascii value.
+*@retval Returns the ascii value of the ten digit dialed number
+**/
 char dialing()
 {
 	char dialedNumber, counter; 
@@ -152,9 +163,14 @@ char dialing()
 			}				
 		}	
 }
+
+/**
+*@brief A function that initalizes the micro controller
+*@retval None
+*/
 void init(void) 
 {
-	OSCCON = 	0b01100110;	//set frequency to 4MHz
+	OSCCON = 	0b01100110;	//set frequency to 4 MHz
 	TRISA = 	0b00000000; //set PORTA as all output 
 	TRISB = 	0b11111111; //set PORTB 
 	
@@ -176,6 +192,12 @@ void init(void)
 	WAVE2 = 0;
 }
 
+/**
+*@brief A function that compares two strings
+*@param[in] search The string to be searched
+*@param[in] find The string you are looking for.
+*@retval Returns 0 if character is found
+*/
 char stringCompare(const char *search, const char *find)
 {
 	unsigned char findSpot, searchSpot;
@@ -202,17 +224,21 @@ char stringCompare(const char *search, const char *find)
 	return 0;	
 }
 
-/*A function that sends a string via the USART char by char
-Input: unsigned char* word, to the char array to be sent
-Output: void */
+/**
+*@brief A function that sends a string via the USART char by char
+*@param[in] word The char array to be sent
+*@retval None
+*/
 void sendString( const unsigned char *word)
 {	
 	while( *word)		// loop until *word == '\0' the  end of the string
-		putch(*word++);	//send the first char and increment the pointer
-	//putch('\n');		// finish with a newline	
+		putch(*word++);	//send the first char and increment the pointer	
 }
 
-//Blue Tooth Configuration Routine
+/**
+*@brief Blue Tooth Configuration Routine
+*@retval None
+*/
 void blueToothConfig(void)
 {
 	sendString("SET CONTROL CONFIG 100\n");	//Enable SCO Links
@@ -228,9 +254,11 @@ void blueToothConfig(void)
 	sendString("RESET\n");
 }
 
-/* A function which rings the phone for an incoming call and sends the "ANSWER" and "HANG UP" strings
-Input: void
-Output: void */
+/**
+*@brief A function which rings the phone for an incoming 
+call and sends the "ANSWER" and "HANG UP" strings
+*@retval None
+*/
 void incomingCall(void)
 {
 	//Does not check if caller has stopped calling :(
@@ -256,9 +284,10 @@ void incomingCall(void)
 	}
 }
 
-//Dialing a Call: Sends a dialed number to the BT module
-//Inputs: None
-//Outputs: None
+/**
+*@brief Sends a dialed number to the BT module
+*@retval None
+*/
 void call(void)
 {
 	char i;
@@ -281,6 +310,12 @@ void call(void)
 	
 	sendString("HANGUP\r\n");
 }	
+
+/**
+*@brief The main function that intializes the system and communicates with the BT module
+*@retval None
+*@note The blueToothConfig function needs only be called once to setup the module.
+*/
 void main(void)
 {
 	init_comms(); 	//Setup UART
